@@ -9,6 +9,7 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const marksRoutes = require("./routes/marksRoutes");  // ✅ Added
 const assignmentRoutes = require("./routes/assignmentRoutes");  // ✅ Added
 const notificationRoutes = require("./routes/notificationRoutes");
+const geminiRoutes = require("./routes/geminiRoutes"); 
 
 const app = express();
 const PORT = process.env.PORT || 5002;
