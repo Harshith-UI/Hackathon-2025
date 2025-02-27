@@ -1,27 +1,26 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 const Assignment = require("../models/Assignment");
-const Notification = require("../models/Notification");
-const Student = require("../models/Student");
 const verifyToken = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-// Multer setup
-const storage = multer.diskStorage({
-    destination: "uploads/",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    },
+// ✅ Configure Multer Storage for Cloudinary (Images Only)
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "assignments",
+    allowed_formats: ["jpg", "jpeg", "png"],
+  },
 });
 
 const upload = multer({ storage });
 
-// ✅ Upload assignment
+// ✅ Upload Assignment (Images Only)
 router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
     try {
-        console.log("📌 Received Assignment Data:", req.body);
+        console.log("📌 Request Body:", req.body);
         console.log("📌 Uploaded File:", req.file);
 
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
@@ -33,26 +32,27 @@ router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
 
         const newAssignment = new Assignment({
             title,
-            fileUrl: `/uploads/${req.file.filename}`,
+            fileUrl: req.file.path, // ✅ Cloudinary URL
             teacherId: req.user.id,
             dueDate: new Date(dueDate),
         });
 
         await newAssignment.save();
 
-        // ✅ Notify all parents
-        const parents = await Student.distinct("parentId");
-        for (const parentId of parents) {
-            await new Notification({
-                parentId,
-                message: `New assignment uploaded: ${title}`,
-            }).save();
-        }
-
         res.status(201).json({ message: "Assignment uploaded successfully", assignment: newAssignment });
     } catch (error) {
-        console.error("🚨 Error in Assignment API:", error);
-        res.status(500).json({ message: "Error uploading assignment", error });
+        console.error("🚨 Server Error:", error);
+        res.status(500).json({ message: "Error uploading assignment", error: error.message });
+    }
+});
+
+router.get("/", async (req, res) => {
+    try {
+        const assignments = await Assignment.find().sort({ dueDate: 1 });
+        res.json(assignments);
+    } catch (error) {
+        console.error("🚨 Error fetching assignments:", error);
+        res.status(500).json({ message: "Error fetching assignments" });
     }
 });
 
