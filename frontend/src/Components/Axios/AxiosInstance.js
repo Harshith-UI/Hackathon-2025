@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://hackathon-2025-dqhg.onrender.com",
+  baseURL: "https://hackathon-2025-dqhg.onrender.com/api",
 });
 
 axiosInstance.interceptors.request.use(
