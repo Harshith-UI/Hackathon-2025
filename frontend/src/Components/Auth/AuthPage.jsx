@@ -21,11 +21,8 @@ const AuthPage = ({ type, role }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleAuth();
-    }
-  };
+ 
+
   const handleAuth = async () => {
   setLoading(true);
   try {
@@ -91,7 +88,6 @@ const AuthPage = ({ type, role }) => {
               className="w-full pl-12 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
               value={formData.email}
               onChange={handleChange}
-              onKeyDown={handleKeyPress}
               required
             />
           </div>
@@ -105,7 +101,6 @@ const AuthPage = ({ type, role }) => {
               className="w-full pl-12 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
               value={formData.password}
               onChange={handleChange}
-              onKeyDown={handleKeyPress}
               required
             />
             <button
