@@ -54,4 +54,36 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     }
 });
 
+// ✅ Parent Fetching Marks
+router.get("/exam/:examType", authMiddleware, async (req, res) => {
+  try {
+      const { examType } = req.params;
+
+      // ✅ Ensure only parents can access this route
+      if (req.user.role !== "parent") {
+        return res.status(403).json({ message: "Access denied. Only parents can view this data." });
+      }
+
+      // ✅ Find student linked to the parent
+      const student = await Student.findOne({ parentId: req.user._id });
+
+      if (!student) {
+        return res.status(404).json({ message: "No student linked to this parent." });
+      }
+
+      // ✅ Fetch marks for the student based on the exam type
+      const marks = await Marks.findOne({ student: student._id, examType: examType })
+        .populate("student", "name rollNo class section");
+
+      if (!marks) {
+        return res.status(200).json([]);  // ✅ Return empty array instead of 404
+      }
+
+      res.status(200).json(marks);
+  } catch (error) {
+    console.error("🚨 Error fetching marks:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 module.exports = router;
