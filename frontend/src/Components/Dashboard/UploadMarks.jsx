@@ -10,7 +10,7 @@ const UploadMarks = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [examType, setExamType] = useState("");
-  
+
   // ✅ State to store marks
   const [marks, setMarks] = useState({
     English: "", Mathematics: "", Science: "", SocialStudies: ""
@@ -19,11 +19,6 @@ const UploadMarks = () => {
   // ✅ State to store selected answer script files
   const [answerScripts, setAnswerScripts] = useState({
     English: null, Mathematics: null, Science: null, SocialStudies: null
-  });
-
-  // ✅ State to store uploaded answer script URLs
-  const [scriptURLs, setScriptURLs] = useState({
-    English: "", Mathematics: "", Science: "", SocialStudies: ""
   });
 
   // ✅ Fetch students when component loads
@@ -58,11 +53,14 @@ const UploadMarks = () => {
       const formData = new FormData();
       formData.append("file", file);
 
+      console.log(`🚀 Uploading ${file.name} to S3...`);
+
       // 🔹 Upload file to S3
       const response = await axiosInstance.post("/upload-s3", formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 
+      console.log(`✅ File uploaded: ${response.data.url}`);
       return response.data.url; // 🔹 Return uploaded file URL
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -82,14 +80,12 @@ const UploadMarks = () => {
       toast.loading("Uploading answer scripts...");
 
       // 🔹 Upload all answer scripts to S3 & store URLs
-      const uploadedURLs = { ...scriptURLs };
+      const uploadedURLs = {};
       for (const subject of Object.keys(answerScripts)) {
         if (answerScripts[subject]) {
           uploadedURLs[subject] = await uploadToS3(answerScripts[subject]);
         }
       }
-
-      setScriptURLs(uploadedURLs); // 🔹 Update state with uploaded URLs
 
       toast.dismiss();
       toast.loading("Submitting marks...");
@@ -99,18 +95,19 @@ const UploadMarks = () => {
         student: selectedStudent,
         examType,
         subjects: marks,
-        answerScripts: uploadedURLs, // 🔹 Include Answer Script URLs
+        answerScripts: uploadedURLs, // 🔹 Include uploaded answer script URLs
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       toast.dismiss();
       toast.success(response.data.message);
-      
+
+      console.log("✅ Marks & Answer Scripts Submitted Successfully:", response.data);
+
       // ✅ Reset form after successful submission
       setMarks({ English: "", Mathematics: "", Science: "", SocialStudies: "" });
       setAnswerScripts({ English: null, Mathematics: null, Science: null, SocialStudies: null });
-      setScriptURLs({ English: "", Mathematics: "", Science: "", SocialStudies: "" });
       setSelectedStudent("");
       setExamType("");
     } catch (error) {
