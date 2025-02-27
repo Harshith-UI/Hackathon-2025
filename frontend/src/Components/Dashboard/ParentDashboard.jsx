@@ -1,16 +1,31 @@
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { Bell, LogOut, Calendar, LineChart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ChildAttendance from './ChildAttendance';
 import ChildProgress from './ChildProgress';
 import ParentCommunication from './ParentCommunication';
 import Notifications from './Notifications';
+import axiosInstance from '../Axios/AxiosInstance';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await axiosInstance.get("/notifications");
+        setNotificationCount(response.data.length);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotificationCount();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -72,7 +87,11 @@ const ParentDashboard = () => {
               <h1 className="text-3xl font-semibold">Welcome, Parent!</h1>
               <button className="relative">
                 <Bell className="w-6 h-6 text-gray-600 hover:text-indigo-500" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">2</span>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                    {notificationCount}
+                  </span>
+                )}
               </button>
             </div>
             <div className="grid grid-cols-3 gap-6">
