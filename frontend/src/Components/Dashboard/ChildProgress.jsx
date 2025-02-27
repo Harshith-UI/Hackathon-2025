@@ -40,28 +40,33 @@ const ChildProgress = () => {
     fetchProgressReport();
   }, [examType, token]); // ✅ useEffect triggers API call when `examType` changes
 
-  // 🔹 Function to generate AI-based analysis
+  // 🔹 Function to generate AI-based insights
   const generateAnalysis = async () => {
     if (!progressReport) {
       toast.error("No progress data available.");
       return;
     }
 
-    toast.loading("Generating AI analysis...");
+    toast.loading("Generating insights...");
 
     try {
       const response = await axiosInstance.post("/gemini/analyze", {
         prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}`,
       });
 
-      const aiResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
-      setAnalysis(aiResponse);
+      const rawText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
+      const formattedText = rawText
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold text
+        .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italic text
+        .replace(/\n/g, "<br />"); // Preserve line breaks
+
+      setAnalysis(formattedText);
       toast.dismiss();
-      toast.success("Analysis generated successfully!");
+      toast.success("Insights generated successfully!");
     } catch (error) {
       toast.dismiss();
-      toast.error("Failed to generate analysis.");
-      console.error("🚨 Error generating AI analysis:", error);
+      toast.error("Failed to generate insights.");
+      console.error("🚨 Error generating insights:", error);
     }
   };
 
@@ -110,19 +115,19 @@ const ChildProgress = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* AI Analysis Button */}
+          {/* AI Insights Button */}
           <button
             onClick={generateAnalysis}
             className="mt-6 w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-700 transition shadow-md flex items-center justify-center"
           >
-            <BrainCircuit className="mr-2" /> Generate AI Analysis
+            <BrainCircuit className="mr-2" /> Get Insights
           </button>
 
-          {/* Display AI Analysis */}
+          {/* Display AI Insights */}
           {analysis && (
             <div className="mt-6 p-4 bg-white shadow-md rounded-lg border border-gray-300">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">🔍 AI Analysis</h3>
-              <p className="text-gray-600 whitespace-pre-line">{analysis}</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">🔍 Insights</h3>
+              <p className="text-gray-600 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: analysis }}></p>
             </div>
           )}
 
@@ -135,4 +140,3 @@ const ChildProgress = () => {
 };
 
 export default ChildProgress;
-
