@@ -39,9 +39,41 @@ const TeacherDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
+      {/* Sidebar Navigation */}
       <div className="w-64 bg-white shadow-lg p-5 flex flex-col h-screen fixed left-0 top-0">
         <h2 className="text-2xl font-semibold mb-6">Teacher Dashboard</h2>
+        <nav>
+          <button
+            className="w-full py-2 px-4 mb-2 text-left rounded-lg hover:bg-gray-200"
+            onClick={() => window.location.href = "/teacher/dashboard"}
+          >
+            Dashboard
+          </button>
+          <button
+            className="w-full py-2 px-4 mb-2 text-left rounded-lg hover:bg-gray-200"
+            onClick={() => window.location.href = "/teacher/students"}
+          >
+            Manage Students
+          </button>
+          <button
+            className="w-full py-2 px-4 mb-2 text-left rounded-lg hover:bg-gray-200"
+            onClick={() => window.location.href = "/teacher/attendance"}
+          >
+            Attendance
+          </button>
+          <button
+            className="w-full py-2 px-4 mb-2 text-left rounded-lg hover:bg-gray-200"
+            onClick={() => window.location.href = "/teacher/marks"}
+          >
+            Upload Marks
+          </button>
+          <button
+            className="w-full py-2 px-4 mb-2 text-left rounded-lg hover:bg-gray-200"
+            onClick={() => window.location.href = "/teacher/assignments"}
+          >
+            Assignments
+          </button>
+        </nav>
         <button
           onClick={logout}
           className="w-full py-2 px-4 text-left rounded-lg text-red-500 hover:text-red-700 flex items-center justify-center"
