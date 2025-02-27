@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const Assignment = require("../models/Assignment");
 const Notification = require("../models/Notification");
+const Student = require("../models/Student");
 const verifyToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -17,12 +18,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Upload assignment
+// ✅ Upload assignment
 router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
     try {
+        console.log("📌 Received Assignment Data:", req.body);
+        console.log("📌 Uploaded File:", req.file);
+
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
         const { title, dueDate } = req.body;
+        if (!title || !dueDate) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
         const newAssignment = new Assignment({
             title,
@@ -33,25 +40,19 @@ router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
 
         await newAssignment.save();
 
-        // Save notification
-        const notification = new Notification({
-            message: `New assignment uploaded: ${title}`,
-        });
-        await notification.save();
+        // ✅ Notify all parents
+        const parents = await Student.distinct("parentId");
+        for (const parentId of parents) {
+            await new Notification({
+                parentId,
+                message: `New assignment uploaded: ${title}`,
+            }).save();
+        }
 
         res.status(201).json({ message: "Assignment uploaded successfully", assignment: newAssignment });
     } catch (error) {
+        console.error("🚨 Error in Assignment API:", error);
         res.status(500).json({ message: "Error uploading assignment", error });
-    }
-});
-
-// Get all assignments
-router.get("/", verifyToken, async (req, res) => {
-    try {
-        const assignments = await Assignment.find().populate("teacherId", "name email");
-        res.status(200).json(assignments);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching assignments", error });
     }
 });
 
