@@ -1,13 +1,11 @@
-
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
-import { Bell, LogOut, Users, ClipboardList } from 'lucide-react';
+import { LogOut, Users, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
 import ManageStudents from './ManageStudents';
 import Attendance from "./Attendance";
 import UploadMarks from "./UploadMarks";
 import Assignments from "./Assignments"; 
-
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
@@ -79,10 +77,6 @@ const TeacherDashboard = () => {
         {activeSection === 'dashboard' &&  <>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-semibold">Welcome, Teacher!</h1>
-            <button className="relative">
-              <Bell className="w-6 h-6 text-gray-600 hover:text-indigo-500" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">3</span>
-            </button>
           </div>
           <div className="grid grid-cols-3 gap-6">
             <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
