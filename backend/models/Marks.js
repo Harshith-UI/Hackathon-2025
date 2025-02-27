@@ -7,12 +7,9 @@ const MarksSchema = new mongoose.Schema({
         required: true
     },
     subjects: {
-        Telugu: { type: Number, required: true },
-        Hindi: { type: Number, required: true },
         English: { type: Number, required: true },
         Mathematics: { type: Number, required: true },
         Science: { type: Number, required: true },
-        Biology: { type: Number, required: true },
         SocialStudies: { type: Number, required: true },
     },
     totalMarks: { type: Number, required: true },
@@ -23,3 +20,4 @@ const MarksSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Marks', MarksSchema);
+
