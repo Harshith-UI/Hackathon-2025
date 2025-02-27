@@ -6,7 +6,7 @@ const Notification = require("../models/Notification");
 const authMiddleware = require("../middleware/authMiddleware");
 const teacherOnly = require("../middleware/teacherOnly");
 
-// ✅ POST: Add Marks for a Student
+// ✅ POST: Add or Update Marks for a Student
 router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     try {
         console.log("📌 Received Marks Data:", req.body);
@@ -42,16 +42,30 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
         else if (percentage >= 50) grade = 'D';
         else grade = 'F';
 
-        const newMarks = new Marks({
-            student,
-            subjects: parsedSubjects,
-            totalMarks,
-            percentage,
-            grade,
-            examType
-        });
+        // ✅ Check if marks already exist for this student & examType
+        let existingMarks = await Marks.findOne({ student, examType });
 
-        await newMarks.save();
+        if (existingMarks) {
+            // ✅ Update the existing record
+            existingMarks.subjects = parsedSubjects;
+            existingMarks.totalMarks = totalMarks;
+            existingMarks.percentage = percentage;
+            existingMarks.grade = grade;
+            await existingMarks.save();
+            console.log("✅ Marks Updated Successfully!");
+        } else {
+            // ✅ Create a new record if no existing marks found
+            existingMarks = new Marks({
+                student,
+                subjects: parsedSubjects,
+                totalMarks,
+                percentage,
+                grade,
+                examType
+            });
+            await existingMarks.save();
+            console.log("✅ Marks Added Successfully!");
+        }
 
         // ✅ Notify the student's parent
         const studentRecord = await Student.findById(student);
@@ -62,11 +76,10 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
             }).save();
         }
 
-        console.log("✅ Marks Saved Successfully!");
-        res.status(201).json({ message: "Marks added successfully", marks: newMarks });
+        res.status(201).json({ message: "Marks added/updated successfully", marks: existingMarks });
     } catch (error) {
         console.error("🚨 Error in Marks API:", error);
-        res.status(500).json({ message: "Error adding marks", error: error.message });
+        res.status(500).json({ message: "Error adding/updating marks", error: error.message });
     }
 });
 
