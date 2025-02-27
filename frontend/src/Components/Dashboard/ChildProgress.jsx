@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } fro
 import { FileSearch, BrainCircuit } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import axios from "axios";
+
 const ChildProgress = () => {
   const { token } = useAuthStore();
   const [examType, setExamType] = useState("");
@@ -22,7 +23,7 @@ const ChildProgress = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.data.message === "No marks found for this exam type.") {
+        if (!response.data || response.data.length === 0) {
           setProgressReport(null);
           setLoading(false);
           return;
@@ -30,7 +31,7 @@ const ChildProgress = () => {
         setProgressReport(response.data);
       } catch (error) {
         toast.error("Failed to fetch progress report.");
-        console.error("Error fetching progress report:", error);
+        console.error("🚨 Error fetching progress report:", error);
       }
       setLoading(false);
       setAnalysis("");
@@ -39,31 +40,30 @@ const ChildProgress = () => {
     fetchProgressReport();
   }, [examType, token]); // ✅ useEffect triggers API call when `examType` changes
 
-// 🔹 Function to generate AI-based analysis
+  // 🔹 Function to generate AI-based analysis
   const generateAnalysis = async () => {
-  if (!progressReport) {
-    toast.error("No progress data available.");
-    return;
-  }
+    if (!progressReport) {
+      toast.error("No progress data available.");
+      return;
+    }
 
-  toast.loading("Generating AI analysis...");
+    toast.loading("Generating AI analysis...");
 
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/api/gemini/analyze", // Backend API URL
-      { prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}` }
-    );
+    try {
+      const response = await axiosInstance.post("/gemini/analyze", {
+        prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}`,
+      });
 
-    const aiResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
-    setAnalysis(aiResponse);
-    toast.dismiss();
-    toast.success("Analysis generated successfully!");
-  } catch (error) {
-    toast.error("Failed to generate analysis.");
-    console.error("Error generating AI analysis:", error);
-  }
-};
-
+      const aiResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
+      setAnalysis(aiResponse);
+      toast.dismiss();
+      toast.success("Analysis generated successfully!");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to generate analysis.");
+      console.error("🚨 Error generating AI analysis:", error);
+    }
+  };
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
@@ -93,7 +93,7 @@ const ChildProgress = () => {
           <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Performance Report</h3>
           <p className="text-gray-600"><strong>Student:</strong> {progressReport.student.name}</p>
           <p className="text-gray-600"><strong>Roll No:</strong> {progressReport.student.rollNo}</p>
-          <p className="text-gray-600"><strong>Percentage:</strong> {progressReport.percentage}%</p>
+          <p className="text-gray-600"><strong>Percentage:</strong> {progressReport.percentage.toFixed(2)}%</p>
           <p className="text-gray-600"><strong>Grade:</strong> {progressReport.grade}</p>
 
           {/* Bar Chart for Subject-Wise Marks */}
@@ -135,3 +135,4 @@ const ChildProgress = () => {
 };
 
 export default ChildProgress;
+
