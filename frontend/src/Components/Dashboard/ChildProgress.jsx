@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { FileSearch, BrainCircuit } from "lucide-react";
 import useAuthStore from "../../store/authStore";
-import axios from "axios";
 
 const ChildProgress = () => {
   const { token } = useAuthStore();
@@ -28,7 +27,17 @@ const ChildProgress = () => {
           setLoading(false);
           return;
         }
-        setProgressReport(response.data);
+
+        // ✅ Ensure only 4 subjects are considered
+        const { subjects, student, percentage, grade } = response.data;
+        const filteredSubjects = {
+          English: subjects.English,
+          Mathematics: subjects.Mathematics,
+          Science: subjects.Science,
+          SocialStudies: subjects.SocialStudies,
+        };
+
+        setProgressReport({ subjects: filteredSubjects, student, percentage, grade });
       } catch (error) {
         toast.error("Failed to fetch progress report.");
         console.error("🚨 Error fetching progress report:", error);
@@ -38,7 +47,7 @@ const ChildProgress = () => {
     };
 
     fetchProgressReport();
-  }, [examType, token]); // ✅ useEffect triggers API call when `examType` changes
+  }, [examType, token]); // ✅ API call triggers when `examType` changes
 
   // 🔹 Function to generate AI-based insights
   const generateAnalysis = async () => {
@@ -105,7 +114,9 @@ const ChildProgress = () => {
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-2">Subject-wise Marks</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={Object.entries(progressReport.subjects).map(([subject, marks]) => ({ subject, marks }))}>
+              <BarChart
+                data={Object.entries(progressReport.subjects).map(([subject, marks]) => ({ subject, marks }))}
+              >
                 <XAxis dataKey="subject" />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
