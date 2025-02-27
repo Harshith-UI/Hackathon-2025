@@ -16,21 +16,15 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // ✅ Ensure only 4 required subjects are processed
-        const { English, Mathematics, Science, SocialStudies } = subjects;
+        // ✅ Convert subject marks correctly (handle empty values)
+        const validSubjects = {};
+        Object.keys(subjects).forEach(subject => {
+            validSubjects[subject] = Number(subjects[subject]) || 0; // Default to 0 if empty
+        });
 
-        if (
-            English === undefined ||
-            Mathematics === undefined ||
-            Science === undefined ||
-            SocialStudies === undefined
-        ) {
-            return res.status(400).json({ message: "All 4 subjects (English, Mathematics, Science, SocialStudies) are required." });
-        }
-
-        // ✅ Calculate total marks, percentage & grade
-        const totalMarks = parseInt(English) + parseInt(Mathematics) + parseInt(Science) + parseInt(SocialStudies);
-        const percentage = (totalMarks / 400) * 100; // 4 subjects, max 100 each
+        // ✅ Correct total marks calculation
+        const totalMarks = Object.values(validSubjects).reduce((acc, mark) => acc + Number(mark || 0), 0);
+        const percentage = (totalMarks / (Object.keys(validSubjects).length * 100)) * 100;
 
         let grade;
         if (percentage >= 90) grade = 'A+';
@@ -42,7 +36,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
 
         const newMarks = new Marks({
             student,
-            subjects: { English, Mathematics, Science, SocialStudies },
+            subjects: validSubjects,
             totalMarks,
             percentage,
             grade,
@@ -51,12 +45,12 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
 
         await newMarks.save();
 
-        // ✅ Fetch the student's parentId and notify them
+        // ✅ Notify parent
         const studentRecord = await Student.findById(student);
         if (studentRecord) {
             await new Notification({
                 parentId: studentRecord.parentId,
-                message: `New marks uploaded for ${examType}. Check the Parent Dashboard.`,
+                message: `New marks uploaded for ${examType}`,
             }).save();
         }
 
@@ -86,7 +80,7 @@ router.get("/exam/:examType", authMiddleware, async (req, res) => {
 
         // ✅ Fetch marks for the student based on the exam type
         const marks = await Marks.findOne({ student: student._id, examType: examType })
-            .select("subjects totalMarks percentage grade examType date") // Fetch only required fields
+            .select("subjects totalMarks percentage grade examType date")
             .populate("student", "name rollNo class section");
 
         if (!marks) {
