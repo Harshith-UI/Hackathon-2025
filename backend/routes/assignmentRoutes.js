@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const Assignment = require("../models/Assignment");
+const Notification = require("../models/Notification");
 const verifyToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -27,10 +28,17 @@ router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
             title,
             fileUrl: `/uploads/${req.file.filename}`,
             teacherId: req.user.id,
-            dueDate: new Date(dueDate), // Ensure date format is stored correctly
+            dueDate: new Date(dueDate),
         });
 
         await newAssignment.save();
+
+        // Save notification
+        const notification = new Notification({
+            message: `New assignment uploaded: ${title}`,
+        });
+        await notification.save();
+
         res.status(201).json({ message: "Assignment uploaded successfully", assignment: newAssignment });
     } catch (error) {
         res.status(500).json({ message: "Error uploading assignment", error });
