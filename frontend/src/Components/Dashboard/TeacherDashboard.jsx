@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import SolveQuery from "./SolveQuery";
 import useAuthStore from '../../store/authStore';
-import { LogOut, Users, ClipboardList } from 'lucide-react';
+import { LogOut, Users, ClipboardList,CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import ManageStudents from './ManageStudents';
 import Attendance from "./Attendance";
