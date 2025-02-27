@@ -9,11 +9,16 @@ const teacherOnly = require("../middleware/teacherOnly");
 // ✅ POST: Add Marks for a Student
 router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     try {
+        console.log("📌 Received Marks Data:", req.body);
+
         const { student, subjects, examType } = req.body;
+        if (!student || !subjects || !examType) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
         const totalMarks = Object.values(subjects).reduce((acc, mark) => parseInt(acc) + parseInt(mark), 0);
         const percentage = (totalMarks / (Object.keys(subjects).length * 100)) * 100;
-        
+
         let grade;
         if (percentage >= 90) grade = 'A+';
         else if (percentage >= 80) grade = 'A';
@@ -33,43 +38,20 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
 
         await newMarks.save();
 
-        // Save notification
-        const notification = new Notification({
-            message: `New marks uploaded for exam: ${examType}`,
-        });
-        await notification.save();
+        // ✅ Fetch the student's parentId
+        const studentRecord = await Student.findById(student);
+        if (studentRecord) {
+            await new Notification({
+                parentId: studentRecord.parentId,
+                message: `New marks uploaded for ${examType}`,
+            }).save();
+        }
 
         res.status(201).json({ message: "Marks added successfully", marks: newMarks });
     } catch (error) {
+        console.error("🚨 Error in Marks API:", error);
         res.status(500).json({ message: "Error adding marks", error: error.message });
     }
-});
-
-// ✅ GET Marks by Exam Type
-router.get("/exam/:examType", authMiddleware, async (req, res) => {
-  try {
-      const { examType } = req.params;
-    
-    if (req.user.role !== "parent") {
-      return res.status(403).json({ message: "Access denied. Only parents can view this data." });
-    }
-
-    const student = await Student.findOne({ parentName: req.user.name });
-
-    if (!student) {
-      return res.status(404).json({ message: "No student linked to this parent." });
-    }
-
-    const marks = await Marks.findOne({ student: student._id, examType: examType }).populate("student", "name rollNo class section");
-
-    if (!marks) {
-      return res.status(200).json({ message: "No marks found for this exam type." });
-    }
-
-    res.status(200).json(marks);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
 });
 
 module.exports = router;
