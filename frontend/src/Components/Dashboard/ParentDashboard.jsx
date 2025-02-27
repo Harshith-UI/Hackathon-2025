@@ -124,7 +124,7 @@ const ParentDashboard = () => {
         {activeSection === 'attendance' && <ChildAttendance />}
         {activeSection === 'progress' && <ChildProgress />}
         {activeSection === "assignments" && <ParentAssignments />}
-        {activeSection === 'communication' && <ParentCommunication />}
+        {/* {activeSection === 'communication' && <ParentCommunication />} */}
         {activeSection === 'notifications' && <Notifications />}
       </div>
     </div>
