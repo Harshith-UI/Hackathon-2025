@@ -30,5 +30,6 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/marks", marksRoutes);  // ✅ Added route
 app.use("/api/assignments", assignmentRoutes);  // ✅ Added route
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/gemini", geminiRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
