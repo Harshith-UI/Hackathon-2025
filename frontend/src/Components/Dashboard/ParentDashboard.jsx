@@ -94,14 +94,18 @@ const ParentDashboard = () => {
           <>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-semibold">Welcome, Parent!</h1>
-              <button className="relative">
-                <Bell className="w-6 h-6 text-gray-600 hover:text-indigo-500" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                    {notificationCount}
-                  </span>
-                )}
-              </button>
+              <button 
+  className="relative"
+  onClick={() => navigate("/notifications")}
+>
+  <Bell className="w-6 h-6 text-gray-600 hover:text-indigo-500" />
+  {notificationCount > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+      {notificationCount}
+    </span>
+  )}
+</button>
+
             </div>
             <div className="grid grid-cols-3 gap-6">
               <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
