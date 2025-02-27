@@ -20,5 +20,15 @@ router.post('/login', async (req, res) => {
   const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
   res.json({ token });
 });
+router.get("/get-user-id", (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1]; // Extract token
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
+    res.json({ userId: decoded.id });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
 module.exports = router;
