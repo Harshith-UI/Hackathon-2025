@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const Marks = require("../models/Marks");
@@ -16,15 +17,8 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // ✅ Convert subject marks correctly (handle empty values)
-        const validSubjects = {};
-        Object.keys(subjects).forEach(subject => {
-            validSubjects[subject] = Number(subjects[subject]) || 0; // Default to 0 if empty
-        });
-
-        // ✅ Correct total marks calculation
-        const totalMarks = Object.values(validSubjects).reduce((acc, mark) => acc + Number(mark || 0), 0);
-        const percentage = (totalMarks / (Object.keys(validSubjects).length * 100)) * 100;
+        const totalMarks = Object.values(subjects).reduce((acc, mark) => parseInt(acc) + parseInt(mark), 0);
+        const percentage = (totalMarks / (Object.keys(subjects).length * 100)) * 100;
 
         let grade;
         if (percentage >= 90) grade = 'A+';
@@ -36,7 +30,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
 
         const newMarks = new Marks({
             student,
-            subjects: validSubjects,
+            subjects,
             totalMarks,
             percentage,
             grade,
@@ -45,7 +39,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
 
         await newMarks.save();
 
-        // ✅ Notify parent
+        // ✅ Fetch the student's parentId
         const studentRecord = await Student.findById(student);
         if (studentRecord) {
             await new Notification({
@@ -61,37 +55,36 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     }
 });
 
-// ✅ GET: Parent Fetching Marks
+// ✅ Parent Fetching Marks
 router.get("/exam/:examType", authMiddleware, async (req, res) => {
-    try {
-        const { examType } = req.params;
+  try {
+      const { examType } = req.params;
 
-        // ✅ Ensure only parents can access this route
-        if (req.user.role !== "parent") {
-            return res.status(403).json({ message: "Access denied. Only parents can view this data." });
-        }
+      // ✅ Ensure only parents can access this route
+      if (req.user.role !== "parent") {
+        return res.status(403).json({ message: "Access denied. Only parents can view this data." });
+      }
 
-        // ✅ Find student linked to the parent
-        const student = await Student.findOne({ parentId: req.user._id });
+      // ✅ Find student linked to the parent
+      const student = await Student.findOne({ parentId: req.user._id });
 
-        if (!student) {
-            return res.status(404).json({ message: "No student linked to this parent." });
-        }
+      if (!student) {
+        return res.status(404).json({ message: "No student linked to this parent." });
+      }
 
-        // ✅ Fetch marks for the student based on the exam type
-        const marks = await Marks.findOne({ student: student._id, examType: examType })
-            .select("subjects totalMarks percentage grade examType date")
-            .populate("student", "name rollNo class section");
+      // ✅ Fetch marks for the student based on the exam type
+      const marks = await Marks.findOne({ student: student._id, examType: examType })
+        .populate("student", "name rollNo class section");
 
-        if (!marks) {
-            return res.status(200).json([]);  // ✅ Return empty array instead of 404
-        }
+      if (!marks) {
+        return res.status(200).json([]);  // ✅ Return empty array instead of 404
+      }
 
-        res.status(200).json(marks);
-    } catch (error) {
-        console.error("🚨 Error fetching marks:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
+      res.status(200).json(marks);
+  } catch (error) {
+    console.error("🚨 Error fetching marks:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 });
 
 module.exports = router;
