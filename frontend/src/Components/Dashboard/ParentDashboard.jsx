@@ -2,7 +2,7 @@ import AskQuery from "./AskQuery";
 import ParentAssignments from './ParentAssignments';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
-import { Bell, LogOut, Calendar, LineChart } from 'lucide-react';
+import { Bell, LogOut, Calendar, LineChart,HelpCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ChildAttendance from './ChildAttendance';
 import ChildProgress from './ChildProgress';
