@@ -1,4 +1,4 @@
-
+import ParentAssignments from './ParentAssignments';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { Bell, LogOut, Calendar, LineChart } from 'lucide-react';
@@ -59,6 +59,14 @@ const ParentDashboard = () => {
               Progress Reports
             </button>
             <button
+              className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${
+                activeSection === "assignments" ? "bg-indigo-500 text-white" : "hover:bg-gray-200"
+              }`}
+              onClick={() => setActiveSection("assignments")}
+            >
+              Assignments
+            </button>
+            <button
               className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${activeSection === 'communication' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200'}`}
               onClick={() => setActiveSection('communication')}
             >
@@ -115,6 +123,7 @@ const ParentDashboard = () => {
         )}
         {activeSection === 'attendance' && <ChildAttendance />}
         {activeSection === 'progress' && <ChildProgress />}
+        {activeSection === "assignments" && <ParentAssignments />}
         {activeSection === 'communication' && <ParentCommunication />}
         {activeSection === 'notifications' && <Notifications />}
       </div>

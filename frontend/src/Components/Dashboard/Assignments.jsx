@@ -1,35 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axiosInstance from "../Axios/AxiosInstance";
 import { UploadCloud, FileText, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-
+import { toast } from "react-hot-toast";
 const Assignments = () => {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [dueDate, setDueDate] = useState("");
-  const [assignments, setAssignments] = useState([]);
-
-  useEffect(() => {
-    fetchAssignments();
-  }, []);
-
-  const fetchAssignments = async () => {
-    try {
-      const response = await axiosInstance.get("/assignments");
-      setAssignments(response.data);
-    } catch (error) {
-      console.error("Error fetching assignments:", error);
-    }
-  };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+
+    if (!selectedFile.type.startsWith("image/")) {
+      alert("Only image files (JPG, PNG) are allowed.");
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !title || !dueDate) {
-      alert("Please enter a title, due date, and select a file.");
+      alert("Please enter a title, due date, and select an image file.");
       return;
     }
 
@@ -42,14 +35,13 @@ const Assignments = () => {
       await axiosInstance.post("/assignments/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ Add token
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      alert("Assignment uploaded successfully!");
+      toast.success("Assignment uploaded successfully!");
       setTitle("");
       setFile(null);
       setDueDate("");
-      fetchAssignments(); // Refresh list
     } catch (error) {
       console.error("Error uploading assignment:", error);
       alert("Failed to upload assignment.");
@@ -64,7 +56,7 @@ const Assignments = () => {
     >
       <h2 className="text-2xl font-bold mb-6 text-center flex items-center">
         <FileText className="w-6 h-6 mr-2" />
-        Assignments
+        Upload Assignment
       </h2>
 
       {/* Upload Assignment Form */}
@@ -91,60 +83,20 @@ const Assignments = () => {
           />
         </div>
 
-        <label className="block text-gray-700 font-medium mb-2">Upload File</label>
+        <label className="block text-gray-700 font-medium mb-2">Upload Image</label>
         <div className="flex items-center space-x-3 mb-4">
-          <input
-            type="file"
-            className="hidden"
-            id="fileInput"
-            onChange={handleFileChange}
-            required
-          />
-          <label
-            htmlFor="fileInput"
-            className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-600"
-          >
+          <input type="file" className="hidden" id="fileInput" accept="image/*" onChange={handleFileChange} required />
+          <label htmlFor="fileInput" className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-600">
             <UploadCloud className="w-5 h-5" />
-            <span>Choose File</span>
+            <span>Choose Image</span>
           </label>
           {file && <span className="text-gray-700">{file.name}</span>}
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition shadow-md"
-        >
+        <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
           Upload Assignment
         </button>
       </form>
-
-      {/* Display Uploaded Assignments */}
-      <h3 className="text-lg font-semibold mt-6 mb-3 text-center">📄 Uploaded Assignments</h3>
-      <div className="bg-white p-6 rounded-lg shadow-lg text-gray-900">
-        <ul className="space-y-3">
-          {assignments.length === 0 ? (
-            <p className="text-gray-500">No assignments uploaded yet.</p>
-          ) : (
-            assignments.map((assignment) => (
-              <li
-                key={assignment._id}
-                className="flex flex-col p-3 bg-gray-50 rounded-lg shadow-md border border-gray-200"
-              >
-                <span className="text-gray-800 font-medium">{assignment.title}</span>
-                <span className="text-gray-600 text-sm">Due Date: {new Date(assignment.dueDate).toLocaleDateString()}</span>
-                <a
-                  href={`http://localhost:5000${assignment.fileUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline mt-1"
-                >
-                  View Assignment
-                </a>
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
     </motion.div>
   );
 };
