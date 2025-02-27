@@ -66,12 +66,12 @@ const ParentDashboard = () => {
             >
               Assignments
             </button>
-            <button
+            {/* <button
               className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${activeSection === 'communication' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200'}`}
               onClick={() => setActiveSection('communication')}
             >
               Communication
-            </button>
+            </button> */}
             <button
               className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${activeSection === 'notifications' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200'}`}
               onClick={() => setActiveSection('notifications')}
