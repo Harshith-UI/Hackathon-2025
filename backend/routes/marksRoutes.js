@@ -29,7 +29,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
         }
 
         // ✅ Calculate total marks, percentage & grade
-        const totalMarks = English + Mathematics + Science + SocialStudies;
+        const totalMarks = parseInt(English) + parseInt(Mathematics) + parseInt(Science) + parseInt(SocialStudies);
         const percentage = (totalMarks / 400) * 100; // 4 subjects, max 100 each
 
         let grade;
