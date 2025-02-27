@@ -1,3 +1,4 @@
+import AskQuery from "./AskQuery";
 import ParentAssignments from './ParentAssignments';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
@@ -66,12 +67,14 @@ const ParentDashboard = () => {
             >
               Assignments
             </button>
-            {/* <button
-              className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${activeSection === 'communication' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => setActiveSection('communication')}
+            <button
+              className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${
+                activeSection === "ask-query" ? "bg-indigo-500 text-white" : "hover:bg-gray-200"
+              }`}
+              onClick={() => setActiveSection("ask-query")}
             >
-              Communication
-            </button> */}
+              <HelpCircle className="w-5 h-5 inline-block mr-2" /> Ask Query
+            </button>
             <button
               className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${activeSection === 'notifications' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200'}`}
               onClick={() => setActiveSection('notifications')}
@@ -129,7 +132,7 @@ const ParentDashboard = () => {
         {activeSection === 'attendance' && <ChildAttendance />}
         {activeSection === 'progress' && <ChildProgress />}
         {activeSection === "assignments" && <ParentAssignments />}
-        {/* {activeSection === 'communication' && <ParentCommunication />} */}
+        {activeSection === "ask-query" && <AskQuery />}
         {activeSection === 'notifications' && <Notifications />}
       </div>
     </div>

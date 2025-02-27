@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import SolveQuery from "./SolveQuery";
 import useAuthStore from '../../store/authStore';
 import { LogOut, Users, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
