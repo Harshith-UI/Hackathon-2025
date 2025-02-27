@@ -16,22 +16,23 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        console.log("Subjects Before Parsing:", subjects);
+        console.log("Subjects Before Processing:", subjects);
 
-        // ✅ Convert subject marks to numbers to avoid string issues
+        // ✅ Only allow the required 4 subjects & convert to numbers
+        const validSubjects = ['English', 'Mathematics', 'Science', 'SocialStudies'];
         const parsedSubjects = {};
-        Object.keys(subjects).forEach(subject => {
-            parsedSubjects[subject] = Number(subjects[subject]) || 0;
+        validSubjects.forEach(subject => {
+            parsedSubjects[subject] = Number(subjects[subject]) || 0;  // Ensure numeric values
         });
 
-        console.log("Subjects After Parsing:", parsedSubjects);
+        console.log("Subjects After Processing:", parsedSubjects);
 
-        // ✅ Calculate total marks & percentage
+        // ✅ Calculate total marks & percentage correctly
         const totalMarks = Object.values(parsedSubjects).reduce((acc, mark) => acc + mark, 0);
-        console.log("Total Marks:", totalMarks);
+        console.log("Total Marks Calculated:", totalMarks);
 
-        const percentage = (totalMarks / (Object.keys(parsedSubjects).length * 100)) * 100;
-        console.log("Percentage:", percentage);
+        const percentage = (totalMarks / (validSubjects.length * 100)) * 100;
+        console.log("Percentage Calculated:", percentage);
 
         let grade;
         if (percentage >= 90) grade = 'A+';
