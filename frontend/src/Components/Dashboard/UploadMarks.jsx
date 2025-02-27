@@ -25,30 +25,40 @@ const UploadMarks = () => {
         });
         setStudents(response.data);
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("🚨 Error fetching students:", error);
       }
     };
 
     fetchStudents();
   }, [token]);
 
+  // ✅ Convert marks to numbers before storing them in state
   const handleMarksChange = (subject, value) => {
-    setMarks({ ...marks, [subject]: value });
+    setMarks({ ...marks, [subject]: Number(value) || 0 });
   };
 
+  // ✅ Log & Submit Marks
   const handleSubmit = async () => {
     if (!selectedStudent) {
       toast.error("Please select a student.");
       return;
     }
+    if (!examType) {
+      toast.error("Please select an exam type.");
+      return;
+    }
+
+    const requestData = {
+      student: selectedStudent,
+      subjects: marks,
+      examType,
+    };
+
+    console.log("📤 Sending Data to API:", requestData); // ✅ Log the request data
 
     try {
-      const response = await axiosInstance.post("/marks/add", {
-        student: selectedStudent,
-        subjects: marks,
-        examType,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axiosInstance.post("/marks/add", requestData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       toast.success(response.data.message);
@@ -56,6 +66,7 @@ const UploadMarks = () => {
       setSelectedStudent("");
       setExamType("");
     } catch (error) {
+      console.error("🚨 API Error:", error);
       toast.error(error.response?.data?.message || "Failed to upload marks.");
     }
   };
@@ -132,3 +143,4 @@ const UploadMarks = () => {
 };
 
 export default UploadMarks;
+
