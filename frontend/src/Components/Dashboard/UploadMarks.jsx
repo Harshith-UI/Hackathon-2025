@@ -10,8 +10,9 @@ const UploadMarks = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [marks, setMarks] = useState({
-    Telugu: "", Hindi: "", English: "",
-    Mathematics: "", Science: "", Biology: "",
+    English: "", 
+    Mathematics: "", 
+    Science: "", 
     SocialStudies: ""
   });
   const [examType, setExamType] = useState("");
@@ -43,17 +44,17 @@ const UploadMarks = () => {
 
     try {
       const response = await axiosInstance.post("/marks/add", {
-        headers: { Authorization: `Bearer ${token}` },
         student: selectedStudent,
         subjects: marks,
         examType,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       toast.success(response.data.message);
-      setMarks({ Telugu: "", Hindi: "", English: "",
-        Mathematics: "", Science: "", Biology: "",
-        SocialStudies: "" });
+      setMarks({ English: "", Mathematics: "", Science: "", SocialStudies: "" });
       setSelectedStudent("");
+      setExamType("");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to upload marks.");
     }
@@ -94,13 +95,14 @@ const UploadMarks = () => {
           onChange={(e) => setExamType(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
+          <option value="">-- Choose Exam Type --</option>
           <option value="Midterm">Midterm</option>
           <option value="Final">Final</option>
           <option value="Unit Test">Unit Test</option>
         </select>
 
         {/* Marks Input Fields */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 gap-6">
           {Object.keys(marks).map((subject) => (
             <div key={subject}>
               <label className="block text-gray-700 font-medium mb-1">{subject}</label>
