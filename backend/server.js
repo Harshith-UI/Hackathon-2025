@@ -10,6 +10,7 @@ const marksRoutes = require("./routes/marksRoutes");  // ✅ Added
 const assignmentRoutes = require("./routes/assignmentRoutes");  // ✅ Added
 const notificationRoutes = require("./routes/notificationRoutes");
 const geminiRoutes = require("./routes/geminiRoutes"); 
+const eventRoutes = require("./routes/eventsRoutes");  // ✅ Added Events Route
 
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -31,5 +32,6 @@ app.use("/api/marks", marksRoutes);  // ✅ Added route
 app.use("/api/assignments", assignmentRoutes);  // ✅ Added route
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/gemini", geminiRoutes);
+app.use("/api/events", eventRoutes);  // ✅ Registered Events Route
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
