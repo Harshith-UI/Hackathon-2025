@@ -10,14 +10,15 @@ const teacherOnly = require("../middleware/teacherOnly");
 router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     try {
         console.log("📌 Received Marks Data:", req.body);
-        console.log("Subjects Before Parsing:", req.body.subjects);
 
         const { student, subjects, examType } = req.body;
         if (!student || !subjects || !examType) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // ✅ Convert subjects properly to prevent issues
+        console.log("Subjects Before Parsing:", subjects);
+
+        // ✅ Convert subject marks to numbers to avoid string issues
         const parsedSubjects = {};
         Object.keys(subjects).forEach(subject => {
             parsedSubjects[subject] = Number(subjects[subject]) || 0;
@@ -65,6 +66,43 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     } catch (error) {
         console.error("🚨 Error in Marks API:", error);
         res.status(500).json({ message: "Error adding marks", error: error.message });
+    }
+});
+
+// ✅ GET: Parent Fetching Marks
+router.get("/exam/:examType", authMiddleware, async (req, res) => {
+    try {
+        const { examType } = req.params;
+        console.log("📌 Fetching Marks for Exam Type:", examType);
+
+        // ✅ Ensure only parents can access this route
+        if (req.user.role !== "parent") {
+            return res.status(403).json({ message: "Access denied. Only parents can view this data." });
+        }
+
+        // ✅ Find student linked to the parent
+        const student = await Student.findOne({ parentId: req.user._id });
+
+        if (!student) {
+            console.log("🚨 No student linked to this parent.");
+            return res.status(404).json({ message: "No student linked to this parent." });
+        }
+
+        // ✅ Fetch marks for the student based on the exam type
+        const marks = await Marks.findOne({ student: student._id, examType: examType })
+            .select("subjects totalMarks percentage grade examType date")
+            .populate("student", "name rollNo class section");
+
+        if (!marks) {
+            console.log("🚨 No marks found for this student in", examType);
+            return res.status(200).json([]);  // ✅ Return empty array instead of 404
+        }
+
+        console.log("✅ Marks Found:", marks);
+        res.status(200).json(marks);
+    } catch (error) {
+        console.error("🚨 Error fetching marks:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
