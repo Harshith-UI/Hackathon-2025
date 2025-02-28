@@ -123,7 +123,7 @@ const ParentDashboard = () => {
                 <LineChart className="w-10 h-10 text-green-500 mr-4" />
                 <div>
                   <p className="text-lg font-semibold">Progress</p>
-                  <p className="text-2xl">A-</p>
+                  <p className="text-2xl">A+</p>
                 </div>
               </div>
             </div>
