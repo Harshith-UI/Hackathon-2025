@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { FileSearch, BrainCircuit } from "lucide-react";
 import useAuthStore from "../../store/authStore";
+import axios from "axios";
 
 const ChildProgress = () => {
   const { token } = useAuthStore();
@@ -18,8 +19,8 @@ const ChildProgress = () => {
     const fetchProgressReport = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/marks/exam/${examType}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await axiosInstance.get(/marks/exam/${examType}, {
+          headers: { Authorization: Bearer ${token} },
         });
 
         if (!response.data || response.data.length === 0) {
@@ -27,17 +28,7 @@ const ChildProgress = () => {
           setLoading(false);
           return;
         }
-
-        // ✅ Ensure only 4 subjects are considered
-        const { subjects, student, percentage, grade } = response.data;
-        const filteredSubjects = {
-          English: subjects.English,
-          Mathematics: subjects.Mathematics,
-          Science: subjects.Science,
-          SocialStudies: subjects.SocialStudies,
-        };
-
-        setProgressReport({ subjects: filteredSubjects, student, percentage, grade });
+        setProgressReport(response.data);
       } catch (error) {
         toast.error("Failed to fetch progress report.");
         console.error("🚨 Error fetching progress report:", error);
@@ -47,7 +38,7 @@ const ChildProgress = () => {
     };
 
     fetchProgressReport();
-  }, [examType, token]); // ✅ API call triggers when `examType` changes
+  }, [examType, token]); // ✅ useEffect triggers API call when examType changes
 
   // 🔹 Function to generate AI-based insights
   const generateAnalysis = async () => {
@@ -60,7 +51,7 @@ const ChildProgress = () => {
 
     try {
       const response = await axiosInstance.post("/gemini/analyze", {
-        prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}`,
+        prompt: Analyze this student's progress report:\n${JSON.stringify(progressReport)},
       });
 
       const rawText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
@@ -82,7 +73,7 @@ const ChildProgress = () => {
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-        <FileSearch className="mr-2 text-blue-500" /> {`Child's Progress Report`}
+        <FileSearch className="mr-2 text-blue-500" /> {Child's Progress Report}
       </h2>
 
       {/* Exam Type Selection */}
@@ -114,9 +105,7 @@ const ChildProgress = () => {
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-2">Subject-wise Marks</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={Object.entries(progressReport.subjects).map(([subject, marks]) => ({ subject, marks }))}
-              >
+              <BarChart data={Object.entries(progressReport.subjects).map(([subject, marks]) => ({ subject, marks }))}>
                 <XAxis dataKey="subject" />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
