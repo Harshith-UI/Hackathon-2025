@@ -92,14 +92,14 @@ const TeacherDashboard = () => {
               <Users className="w-10 h-10 text-indigo-500 mr-4" />
               <div>
                 <p className="text-lg font-semibold">Total Students</p>
-                <p className="text-2xl">24</p>
+                <p className="text-2xl">10</p>
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
               <ClipboardList className="w-10 h-10 text-yellow-500 mr-4" />
               <div>
-                <p className="text-lg font-semibold">Assignments Due</p>
-                <p className="text-2xl">5</p>
+                <p className="text-lg font-semibold">Assignments Issued</p>
+                <p className="text-2xl">3</p>
               </div>
             </div>
           </div>
