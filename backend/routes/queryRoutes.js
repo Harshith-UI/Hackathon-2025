@@ -45,7 +45,7 @@ router.get("/get-next-query", async (req, res) => {
 
     if (!query) {
       console.log("No unsolved queries found.");
-      return res.status(404).json({ message: "No unsolved queries available." });
+      return res.status(200).json({ message: "No unsolved queries available." });
     }
 
     console.log("Query found:", query);
@@ -69,7 +69,7 @@ router.post("/solve-query/:queryId", async (req, res) => {
     );
 
     if (!updatedQuery) {
-      return res.status(404).json({ message: "Query not found." });
+      return res.status(200).json({ message: "Query not found." });
     }
 
     res.json({ message: "Query solved successfully!", query: updatedQuery });
