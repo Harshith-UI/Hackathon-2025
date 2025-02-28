@@ -11,7 +11,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
     try {
         console.log("📌 Received Marks Data:", req.body);
 
-        const { student, subjects, examType } = req.body;
+        const { student, subjects, examType, answerScripts } = req.body;
         if (!student || !subjects || !examType) {
             return res.status(400).json({ message: "Missing required fields" });
         }
@@ -51,6 +51,7 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
             existingMarks.totalMarks = totalMarks;
             existingMarks.percentage = percentage;
             existingMarks.grade = grade;
+            existingMarks.answerScripts = answerScripts || existingMarks.answerScripts; // ✅ Update answer scripts if provided
             await existingMarks.save();
             console.log("✅ Marks Updated Successfully!");
         } else {
@@ -61,7 +62,8 @@ router.post('/add', authMiddleware, teacherOnly, async (req, res) => {
                 totalMarks,
                 percentage,
                 grade,
-                examType
+                examType,
+                answerScripts // ✅ Store answer scripts URLs
             });
             await existingMarks.save();
             console.log("✅ Marks Added Successfully!");
@@ -104,7 +106,7 @@ router.get("/exam/:examType", authMiddleware, async (req, res) => {
 
         // ✅ Fetch marks for the student based on the exam type
         const marks = await Marks.findOne({ student: student._id, examType: examType })
-            .select("subjects totalMarks percentage grade examType date")
+            .select("subjects totalMarks percentage grade examType date answerScripts") // ✅ Include answer scripts
             .populate("student", "name rollNo class section");
 
         if (!marks) {
@@ -118,6 +120,27 @@ router.get("/exam/:examType", authMiddleware, async (req, res) => {
         console.error("🚨 Error fetching marks:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
+});
+
+// ✅ GET: Fetch Answer Script URLs
+router.get("/answer-scripts", async (req, res) => {
+  try {
+    const marksData = await Marks.find().select("answerScripts"); // Fetch stored URLs
+    if (!marksData || marksData.length === 0) {
+      return res.status(404).json({ message: "No answer scripts found." });
+    }
+
+    // Combine answer scripts from multiple records if needed
+    let answerScripts = {};
+    marksData.forEach((record) => {
+      Object.assign(answerScripts, record.answerScripts);
+    });
+
+    res.json(answerScripts);
+  } catch (error) {
+    console.error("Error fetching answer scripts:", error);
+    res.status(500).json({ message: "Error fetching answer scripts" });
+  }
 });
 
 module.exports = router;
