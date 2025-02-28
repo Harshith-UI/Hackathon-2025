@@ -12,7 +12,7 @@ const queryRoutes = require("./routes/queryRoutes"); // ✅ Added
 const notificationRoutes = require("./routes/notificationRoutes");
 const geminiRoutes = require("./routes/geminiRoutes");
 const eventRoutes = require("./routes/eventsRoutes");  // ✅ Added Events Route
-const uploadRoutes = require("./routes/uploadRoutes"); // ✅ S3 Upload Route
+const uploadRoutes = require("./routes/uploadRoute"); ✅ (Singular)// ✅ S3 Upload Route
 
 const app = express();
 const PORT = process.env.PORT || 5002;
