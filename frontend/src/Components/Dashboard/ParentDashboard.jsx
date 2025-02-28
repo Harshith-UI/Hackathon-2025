@@ -116,7 +116,7 @@ const ParentDashboard = () => {
                 <Calendar className="w-10 h-10 text-indigo-500 mr-4" />
                 <div>
                   <p className="text-lg font-semibold">Attendance</p>
-                  <p className="text-2xl">95%</p>
+                  <p className="text-2xl">80%</p>
                 </div>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
