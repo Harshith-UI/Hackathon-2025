@@ -46,17 +46,17 @@ const UploadMarks = () => {
     setAnswerScripts({ ...answerScripts, [subject]: file });
   };
 
-  // ✅ Upload Answer Scripts to S3 & Get URLs
-  const uploadToS3 = async (file) => {
+  // ✅ Upload Answer Scripts to Cloudinary & Get URLs
+  const uploadToCloudinary = async (file) => {
     if (!file) return null;
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log(`🚀 Uploading ${file.name} to S3...`);
+      console.log(`🚀 Uploading ${file.name} to Cloudinary...`);
 
-      // 🔹 Upload file to S3
-      const response = await axiosInstance.post("/upload-s3", formData, {
+      // 🔹 Upload file to Cloudinary
+      const response = await axiosInstance.post("/upload-image", formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 
@@ -79,11 +79,11 @@ const UploadMarks = () => {
     try {
       toast.loading("Uploading answer scripts...");
 
-      // 🔹 Upload all answer scripts to S3 & store URLs
+      // 🔹 Upload all answer scripts to Cloudinary & store URLs
       const uploadedURLs = {};
       for (const subject of Object.keys(answerScripts)) {
         if (answerScripts[subject]) {
-          uploadedURLs[subject] = await uploadToS3(answerScripts[subject]);
+          uploadedURLs[subject] = await uploadToCloudinary(answerScripts[subject]);
         }
       }
 
