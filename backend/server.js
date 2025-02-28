@@ -6,13 +6,13 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
-const marksRoutes = require("./routes/marksRoutes");  // ✅ Added
+const marksRoutes = require("./routes/marksRoutes");  
 const assignmentRoutes = require("./routes/assignmentRoutes");
-const queryRoutes = require("./routes/queryRoutes"); // ✅ Added
+const queryRoutes = require("./routes/queryRoutes"); 
 const notificationRoutes = require("./routes/notificationRoutes");
 const geminiRoutes = require("./routes/geminiRoutes");
-const eventRoutes = require("./routes/eventsRoutes");  // ✅ Added Events Route
-const uploadRoutes = require("./routes/uploadRoute"); ✅ (Singular)// ✅ S3 Upload Route
+const eventRoutes = require("./routes/eventsRoutes");  
+const uploadRoutes = require("./routes/uploadRoute"); 
 
 const app = express();
 const PORT = process.env.PORT || 5002;
