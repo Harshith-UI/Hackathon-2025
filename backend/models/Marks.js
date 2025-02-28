@@ -16,8 +16,15 @@ const MarksSchema = new mongoose.Schema({
     percentage: { type: Number, required: true },
     grade: { type: String, required: true },
     examType: { type: String, enum: ['Midterm', 'Final', 'Unit Test'], required: true },
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+
+    // ✅ NEW FIELD: Answer Script URLs
+    answerScripts: {
+        English: { type: String, default: null }, // URL for English Answer Script
+        Mathematics: { type: String, default: null }, // URL for Mathematics Answer Script
+        Science: { type: String, default: null }, // URL for Science Answer Script
+        SocialStudies: { type: String, default: null } // URL for Social Studies Answer Script
+    }
 });
 
 module.exports = mongoose.model('Marks', MarksSchema);
-
