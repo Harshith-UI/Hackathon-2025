@@ -50,7 +50,7 @@ const ChildProgress = () => {
 
   try {
     const response = await axios.post(
-      "http://localhost:5000/api/gemini/analyze", // Backend API URL
+      "https://hackathon-2025-dqhg.onrender.com/api", // Backend API URL
       { prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}` }
     );
 
