@@ -12,7 +12,7 @@ const queryRoutes = require("./routes/queryRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const geminiRoutes = require("./routes/geminiRoutes");
 const eventRoutes = require("./routes/eventsRoutes");
-const uploadRoutes = require("./routes/uploadRoute"); // ✅ Cloudinary Upload Route
+const uploadRoutes = require("./routes/uploadRoutes"); // ✅ Cloudinary Upload Route
 
 const app = express();
 const PORT = process.env.PORT || 5002;
