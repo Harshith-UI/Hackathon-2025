@@ -1,44 +1,52 @@
 const express = require("express");
-const AWS = require("aws-sdk");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const multer = require("multer");
-const multerS3 = require("multer-s3");
 const dotenv = require("dotenv");
 
 dotenv.config(); // Load environment variables
 
 const router = express.Router();
 
-// ✅ Configure AWS S3
-const s3 = new AWS.S3({
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-    region: process.env.AWS_REGION,
+// ✅ Configure AWS S3 Client (AWS SDK v3)
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
 });
 
-// ✅ Configure Multer for S3 Upload
-const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: process.env.S3_BUCKET_NAME,
-        acl: "public-read", // 🔹 Allow public read access (optional)
-        metadata: (req, file, cb) => {
-            cb(null, { fieldName: file.fieldname });
-        },
-        key: (req, file, cb) => {
-            cb(null, `answer-scripts/${Date.now()}-${file.originalname}`);
-        },
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB Limit
-});
+// ✅ Multer Setup (File Upload)
+const storage = multer.memoryStorage(); // Stores files in memory before upload
+const upload = multer({ storage });
 
-// ✅ Upload File Route
-router.post("/upload-s3", upload.single("file"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
-    res.status(200).json({ url: req.file.location });
+// ✅ Upload File to S3 Route
+router.post("/upload-s3", upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  const fileName = `answer-scripts/${Date.now()}-${req.file.originalname}`;
+
+  // S3 Upload Configuration
+  const uploadParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileName,
+    Body: req.file.buffer,
+    ContentType: req.file.mimetype
+  };
+
+  try {
+    const command = new PutObjectCommand(uploadParams);
+    await s3.send(command);
+
+    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+    res.status(200).json({ url: fileUrl });
+  } catch (error) {
+    console.error("S3 Upload Error:", error);
+    res.status(500).json({ message: "Error uploading file" });
+  }
 });
 
 module.exports = router;
