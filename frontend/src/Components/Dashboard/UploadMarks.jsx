@@ -9,19 +9,13 @@ const UploadMarks = () => {
   const { token } = useAuthStore();
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
+  const [marks, setMarks] = useState({
+    Telugu: "", Hindi: "", English: "",
+    Mathematics: "", Science: "", Biology: "",
+    SocialStudies: ""
+  });
   const [examType, setExamType] = useState("");
 
-  // ✅ State to store marks
-  const [marks, setMarks] = useState({
-    English: "", Mathematics: "", Science: "", SocialStudies: ""
-  });
-
-  // ✅ State to store selected answer script files
-  const [answerScripts, setAnswerScripts] = useState({
-    English: null, Mathematics: null, Science: null, SocialStudies: null
-  });
-
-  // ✅ Fetch students when component loads
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -33,85 +27,34 @@ const UploadMarks = () => {
         console.error("Error fetching students:", error);
       }
     };
+
     fetchStudents();
   }, [token]);
 
-  // ✅ Handle Marks Input Change
   const handleMarksChange = (subject, value) => {
     setMarks({ ...marks, [subject]: value });
   };
 
-  // ✅ Handle Answer Script File Selection
-  const handleFileChange = (subject, file) => {
-    setAnswerScripts({ ...answerScripts, [subject]: file });
-  };
-
-  // ✅ Upload Answer Scripts to Cloudinary & Get URLs
-  const uploadToCloudinary = async (file) => {
-    if (!file) return null;
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      console.log(`🚀 Uploading ${file.name} to Cloudinary...`);
-
-      // 🔹 Upload file to Cloudinary
-      const response = await axiosInstance.post("/upload-image", formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
-      });
-
-      console.log(`✅ File uploaded: ${response.data.url}`);
-      return response.data.url; // 🔹 Return uploaded file URL
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
-      return null;
-    }
-  };
-
-  // ✅ Handle Marks Submission
   const handleSubmit = async () => {
-    if (!selectedStudent || !examType) {
-      toast.error("Please select a student and exam type.");
+    if (!selectedStudent) {
+      toast.error("Please select a student.");
       return;
     }
 
     try {
-      toast.loading("Uploading answer scripts...");
-
-      // 🔹 Upload all answer scripts to Cloudinary & store URLs
-      const uploadedURLs = {};
-      for (const subject of Object.keys(answerScripts)) {
-        if (answerScripts[subject]) {
-          uploadedURLs[subject] = await uploadToCloudinary(answerScripts[subject]);
-        }
-      }
-
-      toast.dismiss();
-      toast.loading("Submitting marks...");
-
-      // 🔹 Send Marks + Answer Script URLs to Backend
       const response = await axiosInstance.post("/marks/add", {
-        student: selectedStudent,
-        examType,
-        subjects: marks,
-        answerScripts: uploadedURLs, // 🔹 Include uploaded answer script URLs
-      }, {
         headers: { Authorization: `Bearer ${token}` },
+        student: selectedStudent,
+        subjects: marks,
+        examType,
       });
 
-      toast.dismiss();
       toast.success(response.data.message);
-
-      console.log("✅ Marks & Answer Scripts Submitted Successfully:", response.data);
-
-      // ✅ Reset form after successful submission
-      setMarks({ English: "", Mathematics: "", Science: "", SocialStudies: "" });
-      setAnswerScripts({ English: null, Mathematics: null, Science: null, SocialStudies: null });
+      setMarks({ Telugu: "", Hindi: "", English: "",
+        Mathematics: "", Science: "", Biology: "",
+        SocialStudies: "" });
       setSelectedStudent("");
-      setExamType("");
     } catch (error) {
-      toast.dismiss();
       toast.error(error.response?.data?.message || "Failed to upload marks.");
     }
   };
@@ -126,7 +69,9 @@ const UploadMarks = () => {
         <FilePlus className="mr-2 text-white" /> Upload Marks
       </h2>
 
+      {/* Selection Fields */}
       <div className="bg-white p-6 rounded-lg shadow-lg text-gray-900">
+        
         {/* Student Selection */}
         <label className="block text-gray-700 font-medium mb-2">Select Student</label>
         <select
@@ -149,34 +94,24 @@ const UploadMarks = () => {
           onChange={(e) => setExamType(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">-- Choose Exam --</option>
           <option value="Midterm">Midterm</option>
           <option value="Final">Final</option>
           <option value="Unit Test">Unit Test</option>
         </select>
 
-        {/* Marks Input & File Upload */}
-        <div className="grid grid-cols-2 gap-6">
+        {/* Marks Input Fields */}
+        <div className="grid grid-cols-3 gap-6">
           {Object.keys(marks).map((subject) => (
-            <div key={subject} className="border p-4 rounded-lg shadow-md">
+            <div key={subject}>
               <label className="block text-gray-700 font-medium mb-1">{subject}</label>
               <input
                 type="number"
                 value={marks[subject]}
                 onChange={(e) => handleMarksChange(subject, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 min="0"
                 max="100"
               />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(subject, e.target.files[0])}
-                className="mt-2 w-full"
-              />
-              {answerScripts[subject] && (
-                <p className="text-sm text-green-600 mt-1">File selected: {answerScripts[subject].name}</p>
-              )}
             </div>
           ))}
         </div>
@@ -188,6 +123,7 @@ const UploadMarks = () => {
         >
           ✅ Submit Marks
         </button>
+
       </div>
     </motion.div>
   );
