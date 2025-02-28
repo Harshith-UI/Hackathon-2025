@@ -5,7 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } fro
 import { FileSearch, BrainCircuit } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import axios from "axios";
-
 const ChildProgress = () => {
   const { token } = useAuthStore();
   const [examType, setExamType] = useState("");
@@ -19,11 +18,11 @@ const ChildProgress = () => {
     const fetchProgressReport = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(/marks/exam/${examType}, {
-          headers: { Authorization: Bearer ${token} },
+        const response = await axiosInstance.get(`/marks/exam/${examType}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.data || response.data.length === 0) {
+        if (response.data.message === "No marks found for this exam type.") {
           setProgressReport(null);
           setLoading(false);
           return;
@@ -31,49 +30,47 @@ const ChildProgress = () => {
         setProgressReport(response.data);
       } catch (error) {
         toast.error("Failed to fetch progress report.");
-        console.error("🚨 Error fetching progress report:", error);
+        console.error("Error fetching progress report:", error);
       }
       setLoading(false);
       setAnalysis("");
     };
 
     fetchProgressReport();
-  }, [examType, token]); // ✅ useEffect triggers API call when examType changes
+  }, [examType, token]); // ✅ useEffect triggers API call when `examType` changes
 
-  // 🔹 Function to generate AI-based insights
+// 🔹 Function to generate AI-based analysis
   const generateAnalysis = async () => {
-    if (!progressReport) {
-      toast.error("No progress data available.");
-      return;
-    }
+  if (!progressReport) {
+    toast.error("No progress data available.");
+    return;
+  }
 
-    toast.loading("Generating insights...");
+  toast.loading("Generating AI analysis...");
 
-    try {
-      const response = await axiosInstance.post("/gemini/analyze", {
-        prompt: Analyze this student's progress report:\n${JSON.stringify(progressReport)},
-      });
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/gemini/analyze", // Backend API URL
+      { prompt: `Analyze this student's progress report:\n${JSON.stringify(progressReport)}` }
+    );
 
-      const rawText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
-      const formattedText = rawText
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold text
-        .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italic text
-        .replace(/\n/g, "<br />"); // Preserve line breaks
+    const aiResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
+   // Preserve line breaks
 
-      setAnalysis(formattedText);
-      toast.dismiss();
-      toast.success("Insights generated successfully!");
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to generate insights.");
-      console.error("🚨 Error generating insights:", error);
-    }
-  };
+setAnalysis(aiResponse);
+    toast.dismiss();
+    toast.success("Analysis generated successfully!");
+  } catch (error) {
+    toast.error("Failed to generate analysis.");
+    console.error("Error generating AI analysis:", error);
+  }
+};
+
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-        <FileSearch className="mr-2 text-blue-500" /> {Child's Progress Report}
+        <FileSearch className="mr-2 text-blue-500" /> {`Child's Progress Report`}
       </h2>
 
       {/* Exam Type Selection */}
@@ -98,7 +95,7 @@ const ChildProgress = () => {
           <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Performance Report</h3>
           <p className="text-gray-600"><strong>Student:</strong> {progressReport.student.name}</p>
           <p className="text-gray-600"><strong>Roll No:</strong> {progressReport.student.rollNo}</p>
-          <p className="text-gray-600"><strong>Percentage:</strong> {progressReport.percentage.toFixed(2)}%</p>
+          <p className="text-gray-600"><strong>Percentage:</strong> {progressReport.percentage}%</p>
           <p className="text-gray-600"><strong>Grade:</strong> {progressReport.grade}</p>
 
           {/* Bar Chart for Subject-Wise Marks */}
@@ -115,19 +112,19 @@ const ChildProgress = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* AI Insights Button */}
+          {/* AI Analysis Button */}
           <button
             onClick={generateAnalysis}
             className="mt-6 w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-700 transition shadow-md flex items-center justify-center"
           >
-            <BrainCircuit className="mr-2" /> Get Insights
+            <BrainCircuit className="mr-2" /> Generate AI Analysis
           </button>
 
-          {/* Display AI Insights */}
+          {/* Display AI Analysis */}
           {analysis && (
             <div className="mt-6 p-4 bg-white shadow-md rounded-lg border border-gray-300">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">🔍 Insights</h3>
-              <p className="text-gray-600 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: analysis }}></p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">🔍 AI Analysis</h3>
+              <p className="text-gray-600 whitespace-pre-line">{analysis}</p>
             </div>
           )}
 
