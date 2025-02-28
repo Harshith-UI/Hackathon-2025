@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../Axios/AxiosInstance";
 import { toast } from "react-hot-toast";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare,CheckCircle } from "lucide-react";
 
 const AskQuery = () => {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [parentId, setParentId] = useState(null);
+  const [latestQuery, setLatestQuery] = useState(null);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -22,6 +23,23 @@ const AskQuery = () => {
 
     fetchUserId();
   }, []);
+
+  useEffect(() => {
+
+    const fetchLatestQuery = async () => {
+    try {
+      const response = await axiosInstance.get(`/query/parent-latest-query/${parentId}`);
+      setLatestQuery(response.data);
+    } catch (error) {
+      console.error("Error fetching latest query:", error);
+      setLatestQuery(null);
+    }
+  };
+  if (parentId) {
+    fetchLatestQuery(); // ✅ Fetch latest query after getting parentId
+  }
+  }, [parentId]);
+  
 
   const submitQuery = async () => {
     if (!question.trim()) {
@@ -51,6 +69,26 @@ const AskQuery = () => {
       <h2 className="text-2xl font-semibold flex items-center">
         <MessageSquare className="w-6 h-6 mr-2" /> Ask a Query
       </h2>
+
+      {/* ✅ Display latest query and answer */}
+      {latestQuery && (
+        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+          <p className="text-lg font-semibold">Your Last Query:</p>
+          <p className="text-gray-700">{latestQuery.question}</p>
+          {latestQuery.status === "solved" ? (
+            <div className="mt-2 p-3 bg-green-100 rounded-lg">
+              <p className="text-lg font-semibold flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />{` Teacher's Response:`}
+              </p>
+              <p className="text-gray-800">{latestQuery.answer}</p>
+            </div>
+          ) : (
+              <p className="mt-2 text-yellow-600">{ `Awaiting Teacher's Response...`}</p>
+          )}
+        </div>
+      )}
+
+      {/* ✅ Ask a new query */}
       <textarea
         className="w-full p-3 border rounded-lg mt-3"
         rows="3"
