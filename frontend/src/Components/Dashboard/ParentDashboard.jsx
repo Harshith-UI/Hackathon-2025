@@ -45,6 +45,15 @@ const ParentDashboard = () => {
               Progress Reports
             </button>
             <button
+  className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${
+    activeSection === "answer-scripts" ? "bg-indigo-500 text-white" : "hover:bg-gray-200"
+  }`}
+  onClick={() => setActiveSection("answer-scripts")}
+>
+  Answer Scripts
+</button>
+
+            <button
               className={`w-full py-2 px-4 mb-2 text-left rounded-lg ${
                 activeSection === "assignments" ? "bg-indigo-500 text-white" : "hover:bg-gray-200"
               }`}
